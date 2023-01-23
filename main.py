@@ -101,6 +101,7 @@ if __name__ == "__main__":
         session._set_flight_seats(i+1)
 
 
+# WSTAWIC PRZED URUCHOMIENIEM TESTU:
 
 """
 INSERT INTO aircrafts(aircraft_id, model, no_seats) VALUES (101, 'Boeing 737-800', 189);
@@ -116,9 +117,4 @@ INSERT INTO flights(aircraft_id, flight_date, flight_id, route_id) VALUES (102, 
 INSERT INTO flights(aircraft_id, flight_date, flight_id, route_id) VALUES (102, '2023-01-19', 6, 3);
 INSERT INTO flights(aircraft_id, flight_date, flight_id, route_id) VALUES (102, '2023-01-18', 7, 4);
 INSERT INTO flights(aircraft_id, flight_date, flight_id, route_id) VALUES (102, '2023-01-19', 8, 4);
-
-
-
-
-
 """
