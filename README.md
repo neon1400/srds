@@ -44,6 +44,3 @@ CREATE TABLE srds.seat_reserv(
 * taken_seats - reprezentuje zbior zajetych miejsc - sa dodawane przy usunieciu miejsca z available_seats. Ticket_id pozwala na skorelowanie miejsca z konkretnym klientem, ktory kupil bilet
 * seat_reserv - zawiera klientow i bilety jakie kupili. W przypadku usuniecia rezerwacji, usuwany jest takze rekord z taken_seats i dodawany z powrotem do available_seats
 
-## Testy:
-* 5000 klientow probujacych kupic 1512 miejsc. Z czego kazdy klient losowal na ktory lot kupi bilet i ile kupi biletow (1-5)
-* Test mial ograniczone mozliwosci, gdyz 5000 procesow niesposob bylo uruchomic jednoczesnie na 8 watkowym procesorze, wiec wyniki zalezaly mocno od tego jak system operacyjny zarzadzal dostepem do procesora
