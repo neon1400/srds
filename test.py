@@ -1,29 +1,42 @@
 from main import Session
-from multiprocessing import Process
+from multiprocessing import Process, Queue, Pool, get_context
 import random
+from datetime import datetime
+from statistics import mean
+import matplotlib.pyplot as plt
+import time
+import itertools
 
 
-def customer(customer_id, flight, amount):
-    #print('started')
-    session = Session()
+def customer(customer_id):
+    times = []
+    #print(customer_id)
+    try:
+        # print('started')
+        session = Session()
 
-    s = []
-    t = []
-    for i in range(amount):
-        seat, ticket = session.book_random_seat(flight, customer_id)
-        s.append(seat)
-        t.append(ticket)
+        flight = random.randint(1,16)
+        amount = random.randint(1,5)
+        free = session._get_free(flight)
+        #s = []
+        #t = []
+        if not free:
+            print(customer_id, times)
+            return times
+        for i in range(amount):
+            start = datetime.now()
+            result = session.book_random_seat(flight, customer_id)
+            if result:
+                stop = datetime.now() - start
+                times.append(stop.total_seconds()*1000.0)
+            else:
+                print('ODWOLANE')
+            #print(times)
+            #s.append(seat)
+            #t.append(ticket)
+        # print(customer_id)
+    except:
+        pass
+    print(customer_id, times)
+    return times
 
-if __name__ == "__main__":
-    process_list = []
-    for i in range(5000):
-        flight_id = random.randint(1,8)
-        seat_number = random.randint(1,5)
-        p = Process(target=customer, args=(i, flight_id, seat_number))
-        process_list.append(p)
-    
-    for p in process_list:
-        p.start()
-
-    for p in process_list:
-        p.join()
