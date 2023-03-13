@@ -30,25 +30,30 @@ class Session:
         self.insert_avail = self.session.prepare("INSERT INTO available_seats(flight_id, seat_id) VALUES (?, ?)")
         self.del_reserv = self.session.prepare("DELETE FROM seat_reserv WHERE customer_id=? AND ticket_id=?")
 
+        self.aircraft_info = self.session.prepare("SELECT * FROM aircrafts WHERE aircraft_id=?")
+        self.flight_info = self.session.prepare("SELECT flight_id, aircraft_id FROM flights WHERE route_id=? AND flight_date=?")
+
+        self.free = self.session.prepare("SELECT seat_id FROM available_seats WHERE flight_id=?")
+        self.seat_free = self.session.prepare("SELECT seat_id FROM available_seats WHERE flight_id=? AND seat_id=?")
+        self.seat_succ = self.session.prepare("SELECT ticket_id FROM taken_seats WHERE ticket_id=?")
+        self.rem_res = self.session.prepare("SELECT flight_id, seat_id FROM seat_reserv WHERE customer_id=? and ticket_id=?")
 
     def get_aircraft_info(self, aircraft_id: int):
-        row = self.session.execute(f'SELECT * FROM aircrafts WHERE aircraft_id={aircraft_id}').one()
+        row = self.session.execute(self.aircraft_info, [aircraft_id]).one()
         #print(row)
         if row:
             return row.no_of_stops, row.no_seats, row.path
         raise Exception('No such train')
 
     def get_flight_info(self, route_id, date):
-
-        row = self.session.execute(f"SELECT flight_id, aircraft_id FROM flights WHERE route_id={route_id} AND flight_date='{date}'")
+        row = self.session.execute(self.flight_info, [route_id, date])
         row = row.one()
         if row:
             return row.flight_id, row.aircraft_id
         raise Exception('No such flight')
 
     def _get_free(self, flight_id):
-
-        rows = self.session.execute(f"SELECT seat_id FROM available_seats WHERE flight_id={flight_id}")
+        rows = self.session.execute(self.free, [flight_id])
         
         free_seats = []
         for row in rows:
@@ -57,7 +62,7 @@ class Session:
         return free_seats
 
     def __is_seat_free(self, flight_id, seat_id):
-        rows = self.session.execute(f"SELECT seat_id FROM available_seats WHERE flight_id={flight_id} AND seat_id={seat_id}")
+        rows = self.session.execute(self.seat_free, [flight_id, seat_id])
         rows = rows.one()
 
         if rows:
@@ -65,7 +70,7 @@ class Session:
         return False
 
     def _is_seat_succes(self, ticket_id):
-        rows = self.session.execute(f"SELECT ticket_id FROM taken_seats WHERE ticket_id={ticket_id}")
+        rows = self.session.execute(self.seat_succ, [ticket_id])
         rows = rows.one()
 
         if rows:
@@ -73,8 +78,9 @@ class Session:
         return False
 
     def _set_flight_seats(self, flight_id):
+        self.set_seats = self.session.prepare("INSERT INTO available_seats(flight_id, seat_id) VALUES (?, ?)")
         for i in range(189):
-            self.session.execute(f"INSERT INTO available_seats(flight_id, seat_id) VALUES ({flight_id}, {i})")
+            self.session.execute(self.set_seats, [flight_id, i])
 
     def _reserve_seat(self, flight_id, seat_id, ticket_id, customer_id) -> bool:
         batch = BatchStatement(consistency_level=ConsistencyLevel.ONE)     
@@ -106,7 +112,7 @@ class Session:
         return False, 0
 
     def remove_reserv(self, customer_id, ticket_id):
-        row = self.session.execute(f"SELECT flight_id, seat_id FROM seat_reserv WHERE customer_id={customer_id} and ticket_id={ticket_id}").one()
+        row = self.session.execute(self.rem_res, [customer_id, ticket_id]).one()
         if row:
             batch = BatchStatement(consistency_level=ConsistencyLevel.ONE)     
             
